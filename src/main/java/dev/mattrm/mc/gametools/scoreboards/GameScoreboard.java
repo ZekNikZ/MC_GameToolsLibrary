@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Objects;
 
 public class GameScoreboard {
+    private static int nextId = 0;
+    private final int id;
+
     private final Scoreboard scoreboard;
     private final Objective objective;
     private final List<ScoreboardEntry> entries = new ArrayList<>();
@@ -21,7 +24,9 @@ public class GameScoreboard {
     private int teamCounter = 0;
     private String title;
 
-    public GameScoreboard(String title) {
+    protected GameScoreboard(String title) {
+        this.id = nextId++;
+
         this.scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         this.objective = this.scoreboard.registerNewObjective("display", "dummy");
         this.objective.setDisplaySlot(DisplaySlot.SIDEBAR);
@@ -103,11 +108,33 @@ public class GameScoreboard {
         }
     }
 
+    public int getId() {
+        return this.id;
+    }
+
     public Team registerNewTeam() {
         return this.scoreboard.registerNewTeam("" + (teamCounter++));
     }
 
     public void unregisterTeam(Team team) {
         team.unregister();
+    }
+
+    public void cleanup() {
+        this.scoreboard.getTeams().forEach(this::unregisterTeam);
+        this.entries.forEach(ScoreboardEntry::cleanup);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GameScoreboard that = (GameScoreboard) o;
+        return getId() == that.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return this.getId();
     }
 }

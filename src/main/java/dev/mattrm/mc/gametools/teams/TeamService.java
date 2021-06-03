@@ -151,18 +151,29 @@ public class TeamService extends Service implements IDataManager {
     }
 
     public List<UUID> getTeamMembers(String teamId) {
-        return players.entrySet().stream()
+        return this.players.entrySet().stream()
                 .filter((entry) -> teamId.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
     }
 
     public List<Player> getOnlineTeamMembers(String teamId) {
-        return players.entrySet().stream()
+        return this.players.entrySet().stream()
                 .filter((entry) -> teamId.equals(entry.getValue()))
                 .map(Map.Entry::getKey)
                 .map(Bukkit::getPlayer)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+    }
+
+    public void clearTeam(String teamId) {
+        this.players.entrySet().stream()
+            .filter((entry) -> teamId.equals(entry.getValue()))
+            .map(Map.Entry::getKey)
+            .forEach(this.players::remove);
+    }
+
+    public void clearTeams() {
+        this.players.clear();
     }
 }

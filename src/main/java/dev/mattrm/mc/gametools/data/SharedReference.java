@@ -1,11 +1,12 @@
 package dev.mattrm.mc.gametools.data;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class SharedReference<V> extends AtomicReference<V> {
-    private final List<Runnable> listeners = new ArrayList<>();
+    private final Map<Integer, Runnable> listeners = new ConcurrentHashMap<>();
+    private int nextId = 0;
 
     public SharedReference(V initialValue) {
         super(initialValue);
@@ -20,15 +21,16 @@ public class SharedReference<V> extends AtomicReference<V> {
         this.notifyAllListeners();
     }
 
-    public final void addListener(Runnable runnable) {
-        this.listeners.add(runnable);
+    public final int addListener(Runnable runnable) {
+        this.listeners.put(++nextId, runnable);
+        return nextId;
     }
 
-    public final void removeListener(Runnable runnable) {
-        this.listeners.remove(runnable);
+    public final void removeListener(int id) {
+        this.listeners.remove(id);
     }
 
     public final void notifyAllListeners() {
-        this.listeners.forEach(Runnable::run);
+        this.listeners.values().forEach(Runnable::run);
     }
 }

@@ -1,20 +1,12 @@
 package dev.mattrm.mc.gametools.scoreboards;
 
 import dev.mattrm.mc.gametools.Service;
-import dev.mattrm.mc.gametools.data.SharedReference;
-import dev.mattrm.mc.gametools.scoreboards.impl.IntValueEntry;
-import dev.mattrm.mc.gametools.scoreboards.impl.SharedReferenceEntry;
-import dev.mattrm.mc.gametools.scoreboards.impl.TimerEntry;
 import dev.mattrm.mc.gametools.teams.GameTeam;
 import dev.mattrm.mc.gametools.teams.TeamService;
-import dev.mattrm.mc.gametools.timer.GameTimer;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.HashMap;
@@ -29,11 +21,8 @@ public class ScoreboardService extends Service {
     }
 
     private GameScoreboard globalScoreboard = null;
-    private Map<String, GameScoreboard> teamScoreboards = new HashMap<>();
-    private Map<UUID, GameScoreboard> playerScoreboards = new HashMap<>();
-
-    private SharedReference<Integer> totalClicks = new SharedReference<>(0);
-    private Map<UUID, IntValueEntry> values = new HashMap<>();
+    private final Map<String, GameScoreboard> teamScoreboards = new HashMap<>();
+    private final Map<UUID, GameScoreboard> playerScoreboards = new HashMap<>();
 
     @Override
     protected void setupService() {
@@ -41,18 +30,32 @@ public class ScoreboardService extends Service {
     }
 
     public void setGlobalScoreboard(GameScoreboard scoreboard) {
+        if (this.globalScoreboard != null && teamScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard)) && playerScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard))) {
+            this.globalScoreboard.cleanup();
+        }
+
         this.globalScoreboard = scoreboard;
 
         Bukkit.getOnlinePlayers().forEach(this::updatePlayerScoreboard);
     }
 
     public void setTeamScoreboard(String teamId, GameScoreboard scoreboard) {
+        GameScoreboard current = this.teamScoreboards.get(teamId);
+        if (current != null && !this.globalScoreboard.equals(current) && teamScoreboards.values().stream().noneMatch(s -> s.equals(current)) && playerScoreboards.values().stream().noneMatch(s -> s.equals(current))) {
+            current.cleanup();
+        }
+
         this.teamScoreboards.put(teamId, scoreboard);
 
         TeamService.getInstance().getOnlineTeamMembers(teamId).forEach(this::updatePlayerScoreboard);
     }
 
     public void setPlayerScoreboard(UUID uuid, GameScoreboard scoreboard) {
+        GameScoreboard current = this.playerScoreboards.get(uuid);
+        if (current != null && !this.globalScoreboard.equals(current) && teamScoreboards.values().stream().noneMatch(s -> s.equals(current)) && playerScoreboards.values().stream().noneMatch(s -> s.equals(current))) {
+            current.cleanup();
+        }
+
         this.playerScoreboards.put(uuid, scoreboard);
 
         Player player = Bukkit.getPlayer(uuid);
@@ -61,23 +64,13 @@ public class ScoreboardService extends Service {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     private void onPlayerJoin(PlayerJoinEvent event) {
-        this.setPlayerScoreboard(event.getPlayer().getUniqueId(), this.createNewScoreboard(event.getPlayer().getUniqueId()));
-//        this.updatePlayerScoreboard(event.getPlayer());
+        this.updatePlayerScoreboard(event.getPlayer());
     }
 
-    private GameScoreboard createNewScoreboard(UUID uuid) {
-        GameScoreboard scoreboard = new GameScoreboard("Boop");
-        scoreboard.addEntry("Test 1");
-        scoreboard.addEntry(ChatColor.RED + "Test 2");
-        scoreboard.addSpace();
-        scoreboard.addEntry(new SharedReferenceEntry<>(scoreboard, "TClicks: ", ValueEntry.ValuePos.SUFFIX, totalClicks));
-        this.values.put(uuid, scoreboard.addEntry(new IntValueEntry(scoreboard, "Clicks: ", ValueEntry.ValuePos.SUFFIX, 0)));
-        GameTimer timer = new GameTimer(this.plugin, 20, 61 * 60 * 1000).start();
-        scoreboard.addSpace();
-        scoreboard.addEntry(new TimerEntry(scoreboard, timer));
-        return scoreboard;
+    public GameScoreboard createNewScoreboard(String title) {
+        return new GameScoreboard(title);
     }
 
     private void updatePlayerScoreboard(Player player) {
@@ -96,14 +89,6 @@ public class ScoreboardService extends Service {
             player.setScoreboard(scoreboard.getScoreboard());
         } else {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-        }
-    }
-
-    @EventHandler
-    private void onPlayerClick(PlayerInteractEvent event) {
-        if (event.getAction() == Action.LEFT_CLICK_AIR) {
-            this.totalClicks.setAndNotify(this.totalClicks.get() + 1);
-            this.values.get(event.getPlayer().getUniqueId()).increment();
         }
     }
 }

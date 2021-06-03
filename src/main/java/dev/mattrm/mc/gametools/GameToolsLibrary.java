@@ -2,7 +2,11 @@ package dev.mattrm.mc.gametools;
 
 import dev.mattrm.mc.gametools.commands.CommandOverrides;
 import dev.mattrm.mc.gametools.data.DataService;
+import dev.mattrm.mc.gametools.data.SharedReference;
+import dev.mattrm.mc.gametools.readyup.ReadyUpCommands;
+import dev.mattrm.mc.gametools.readyup.ReadyUpService;
 import dev.mattrm.mc.gametools.scoreboards.ScoreboardService;
+import dev.mattrm.mc.gametools.scoreboards.impl.SharedReferenceEntry;
 import dev.mattrm.mc.gametools.teams.TeamCommands;
 import dev.mattrm.mc.gametools.teams.TeamService;
 import org.bukkit.plugin.PluginManager;
@@ -31,7 +35,11 @@ public final class GameToolsLibrary extends JavaPlugin {
     private void registerServices() {
         DataService.getInstance().setup(this);
 
-        Service[] services = new Service[]{TeamService.getInstance(), ScoreboardService.getInstance()};
+        Service[] services = new Service[]{
+            TeamService.getInstance(),
+            ScoreboardService.getInstance(),
+            ReadyUpService.getInstance()
+        };
 
         PluginManager pluginManager = this.getServer().getPluginManager();
         for (Service service : services) {
@@ -42,6 +50,7 @@ public final class GameToolsLibrary extends JavaPlugin {
 
     private void registerCommands() {
         new TeamCommands().registerCommands(this);
+        new ReadyUpCommands().registerCommands(this);
         new CommandOverrides().registerCommands(this);
     }
 }

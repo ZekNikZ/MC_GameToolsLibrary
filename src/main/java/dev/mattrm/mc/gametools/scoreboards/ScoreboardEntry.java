@@ -16,4 +16,6 @@ public abstract class ScoreboardEntry {
     protected void markDirty() {
         this.scoreboard.redraw();
     }
+
+    protected void cleanup() {}
 }

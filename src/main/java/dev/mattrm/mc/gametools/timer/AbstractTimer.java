@@ -3,16 +3,17 @@ package dev.mattrm.mc.gametools.timer;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractTimer {
-    private final List<Runnable> hooks = new ArrayList<>();
+    private final Map<Integer, Runnable> hooks = new ConcurrentHashMap<>();
     private final JavaPlugin plugin;
     private final long refreshRate;
     private int taskId = -1;
     private boolean isStarted = false;
     private boolean isDone = false;
+    private int nextHookId = 0;
 
     protected AbstractTimer(JavaPlugin plugin, long refreshRateTicks) {
         this.plugin = plugin;
@@ -21,7 +22,7 @@ public abstract class AbstractTimer {
 
     private void update() {
         this.onUpdate();
-        this.hooks.forEach(Runnable::run);
+        this.hooks.values().forEach(Runnable::run);
     }
 
     protected void onUpdate() {
@@ -74,12 +75,13 @@ public abstract class AbstractTimer {
         return this.isDone;
     }
 
-    public void addHook(Runnable hook) {
-        this.hooks.add(hook);
+    public int addHook(Runnable hook) {
+        this.hooks.put(++nextHookId, hook);
+        return nextHookId;
     }
 
-    public void removeHook(Runnable hook) {
-        this.hooks.remove(hook);
+    public void removeHook(int hookId) {
+        this.hooks.remove(hookId);
     }
 
     public abstract long getAbsoluteMillis();
