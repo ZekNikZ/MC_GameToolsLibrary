@@ -15,14 +15,15 @@ public class DataService extends Service {
     }
 
     public void loadAll() {
-        dataManagerList.forEach(IDataManager::loadData);
+        this.dataManagerList.forEach(IDataManager::loadData);
     }
 
     public void saveAll() {
-        dataManagerList.forEach(IDataManager::saveData);
+        this.dataManagerList.forEach(IDataManager::saveData);
     }
 
     public void registerDataManager(IDataManager dataManager) {
-        dataManagerList.add(dataManager);
+        this.dataManagerList.add(dataManager);
+        dataManager.loadData();
     }
 }

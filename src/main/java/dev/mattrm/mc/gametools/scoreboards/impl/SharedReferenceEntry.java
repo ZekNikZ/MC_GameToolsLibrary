@@ -12,12 +12,14 @@ public class SharedReferenceEntry<T> extends ValueEntry<T> {
         super(scoreboard, "", ValuePos.PREFIX, ref.get());
         this.ref = ref;
         this.refListenerId = this.ref.addListener(this::updateValue);
+        this.updateValue();
     }
 
     public SharedReferenceEntry(GameScoreboard scoreboard, String format, ValuePos valuePos, SharedReference<T> ref) {
         super(scoreboard, format, valuePos, ref.get());
         this.ref = ref;
         this.refListenerId = this.ref.addListener(this::updateValue);
+        this.updateValue();
     }
 
     @Override

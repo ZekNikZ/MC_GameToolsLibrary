@@ -96,16 +96,27 @@ public class GameScoreboard {
         }
     }
 
-    public void setTeam(int pos, Team team) {
+    public Team setTeam(int pos, Team team) {
         if (pos >= 15) {
-            return;
+            return null;
         }
 
         this.teams.set(pos, team);
 
         if (this.strings.get(pos) != null) {
-            team.addEntry(this.strings.get(pos));
+            if (this.scoreboard.getTeam(team.getName()) == null) {
+                Team newTeam = this.scoreboard.registerNewTeam(team.getName());
+                newTeam.setSuffix(team.getSuffix());
+                newTeam.setPrefix(team.getPrefix());
+                newTeam.setDisplayName(team.getDisplayName());
+                return newTeam;
+            } else {
+                team.addEntry(this.strings.get(pos));
+                return null;
+            }
         }
+
+        return null;
     }
 
     public int getId() {

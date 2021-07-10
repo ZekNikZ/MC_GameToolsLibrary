@@ -4,14 +4,15 @@ import dev.mattrm.mc.gametools.Service;
 import dev.mattrm.mc.gametools.teams.GameTeam;
 import dev.mattrm.mc.gametools.teams.TeamService;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class ScoreboardService extends Service {
     private static final ScoreboardService INSTANCE = new ScoreboardService();
@@ -30,7 +31,11 @@ public class ScoreboardService extends Service {
     }
 
     public void setGlobalScoreboard(GameScoreboard scoreboard) {
-        if (this.globalScoreboard != null && teamScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard)) && playerScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard))) {
+        this.setGlobalScoreboard(scoreboard, true);
+    }
+
+    public void setGlobalScoreboard(GameScoreboard scoreboard, boolean cleanup) {
+        if (cleanup && this.globalScoreboard != null && teamScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard)) && playerScoreboards.values().stream().noneMatch(s -> s.equals(this.globalScoreboard))) {
             this.globalScoreboard.cleanup();
         }
 
@@ -45,7 +50,11 @@ public class ScoreboardService extends Service {
             current.cleanup();
         }
 
-        this.teamScoreboards.put(teamId, scoreboard);
+        if (scoreboard != null) {
+            this.teamScoreboards.put(teamId, scoreboard);
+        } else {
+            this.teamScoreboards.remove(teamId);
+        }
 
         TeamService.getInstance().getOnlineTeamMembers(teamId).forEach(this::updatePlayerScoreboard);
     }
@@ -56,12 +65,34 @@ public class ScoreboardService extends Service {
             current.cleanup();
         }
 
-        this.playerScoreboards.put(uuid, scoreboard);
+        if (scoreboard != null) {
+            this.playerScoreboards.put(uuid, scoreboard);
+        } else {
+            this.playerScoreboards.remove(uuid);
+        }
 
         Player player = Bukkit.getPlayer(uuid);
         if (player != null) {
             this.updatePlayerScoreboard(player);
         }
+    }
+
+    public Set<GameScoreboard> getAllScoreboards() {
+        Set<GameScoreboard> scoreboards = new HashSet<>();
+        if (this.globalScoreboard != null) {
+            scoreboards.add(this.globalScoreboard);
+        }
+        this.teamScoreboards.values().forEach(s -> {
+            if (s != null) {
+                scoreboards.add(s);
+            }
+        });
+        this.playerScoreboards.values().forEach(s -> {
+            if (s != null) {
+                scoreboards.add(s);
+            }
+        });
+        return scoreboards;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -70,7 +101,9 @@ public class ScoreboardService extends Service {
     }
 
     public GameScoreboard createNewScoreboard(String title) {
-        return new GameScoreboard(title);
+        GameScoreboard scoreboard = new GameScoreboard(title);
+        this.setupTeamsOnScoreboard(scoreboard.getScoreboard());
+        return scoreboard;
     }
 
     private void updatePlayerScoreboard(Player player) {
@@ -90,5 +123,49 @@ public class ScoreboardService extends Service {
         } else {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
+    }
+
+    public void setupTeams() {
+        this.setupTeamsOnScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        this.getAllScoreboards().forEach(scoreboard -> this.setupTeamsOnScoreboard(scoreboard.getScoreboard()));
+        this.updateTeams();
+    }
+
+    private void setupTeamsOnScoreboard(Scoreboard scoreboard) {
+        TeamService.getInstance().getTeams().forEach(gameTeam -> {
+            Team oldTeam = scoreboard.getTeam(gameTeam.getId());
+            if (oldTeam != null) {
+                oldTeam.unregister();
+            }
+            Team team = scoreboard.registerNewTeam(gameTeam.getId());
+            team.setPrefix("" + gameTeam.getFormatCode() + ChatColor.BOLD + gameTeam.getPrefix() + ChatColor.RESET + gameTeam.getFormatCode() + " ");
+            team.setSuffix("" + ChatColor.RESET);
+            team.setCanSeeFriendlyInvisibles(true);
+        });
+    }
+
+    public void updateTeams() {
+//        TeamService.getInstance().getTeams().forEach(gameTeam -> {
+//            TeamService.getInstance().getTeamMembers(gameTeam).forEach(uuid -> Bukkit.getScoreboardManager().getMainScoreboard().getTeam(gameTeam.getId()).addEntry(Bukkit.getOfflinePlayer(uuid).getName()));
+//        });
+        this.updateTeamsOnScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+        this.getAllScoreboards().forEach(scoreboard -> this.updateTeamsOnScoreboard(scoreboard.getScoreboard()));
+    }
+
+    private void updateTeamsOnScoreboard(Scoreboard scoreboard) {
+        TeamService.getInstance().getTeams().forEach(gameTeam -> {
+            Team team = scoreboard.getTeam(gameTeam.getId());
+            team.getEntries().forEach(team::removeEntry);
+            TeamService.getInstance().getTeamMembers(gameTeam).forEach(uuid -> team.addEntry(Bukkit.getOfflinePlayer(uuid).getName()));
+        });
+
+        Bukkit.getOnlinePlayers().forEach(this::updatePlayerScoreboard);
+    }
+
+    public void resetAllScoreboards() {
+        this.getAllScoreboards().forEach(GameScoreboard::cleanup);
+        this.globalScoreboard = null;
+        this.teamScoreboards.clear();
+        this.playerScoreboards.clear();
     }
 }

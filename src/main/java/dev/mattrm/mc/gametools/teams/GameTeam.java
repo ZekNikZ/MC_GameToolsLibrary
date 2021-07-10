@@ -1,8 +1,12 @@
 package dev.mattrm.mc.gametools.teams;
 
 import dev.mattrm.mc.gametools.data.IYamlSectionSerializable;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.scoreboard.Team;
+
+import java.awt.*;
 
 public class GameTeam implements IYamlSectionSerializable<GameTeam> {
     public static final GameTeam SPECTATOR = new GameTeam("spectators", "Spectators", "SPEC");
@@ -12,6 +16,7 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
 
     private String prefix;
     private ChatColor formatCode;
+    private Color color;
 
     public GameTeam(String id, String name, String prefix) {
         this();
@@ -30,6 +35,7 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
 
     public void setFormatCode(ChatColor formatCode) {
         this.formatCode = formatCode;
+        this.updateMinecraftTeam();
     }
 
     public String getId() {
@@ -46,6 +52,7 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
 
     public void setName(String name) {
         this.name = name;
+        this.updateMinecraftTeam();
     }
 
     public String getPrefix() {
@@ -54,6 +61,17 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
+        this.updateMinecraftTeam();
+    }
+
+    private void updateMinecraftTeam() {
+        Team scoreboardTeam = Bukkit.getScoreboardManager().getMainScoreboard().getTeam(this.getId());
+        if (scoreboardTeam == null) {
+            return;
+        }
+        scoreboardTeam.setPrefix("" + this.getFormatCode() + ChatColor.BOLD + this.getPrefix() + ChatColor.RESET + this.getFormatCode() + " ");
+        scoreboardTeam.setSuffix("" + ChatColor.RESET);
+        scoreboardTeam.setDisplayName(this.getName());
     }
 
     @Override
@@ -75,5 +93,13 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
         this.setPrefix(section.getString("prefix"));
         this.setFormatCode(ChatColor.valueOf(section.getString("format")));
         return this;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
+
+    public Color getColor() {
+        return this.color;
     }
 }

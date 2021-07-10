@@ -5,9 +5,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public abstract class AbstractTimer {
     private final Map<Integer, Runnable> hooks = new ConcurrentHashMap<>();
+    private final Map<Integer, Consumer<Integer>> tempHooks = new ConcurrentHashMap<>();
     private final JavaPlugin plugin;
     private final long refreshRate;
     private int taskId = -1;
@@ -23,6 +25,7 @@ public abstract class AbstractTimer {
     private void update() {
         this.onUpdate();
         this.hooks.values().forEach(Runnable::run);
+        this.tempHooks.forEach((id, hook) -> hook.accept(id));
     }
 
     protected void onUpdate() {
@@ -38,6 +41,7 @@ public abstract class AbstractTimer {
                 this.refreshRate
             );
             this.isStarted = true;
+            this.isDone = false;
         }
 
         return this;
@@ -80,8 +84,14 @@ public abstract class AbstractTimer {
         return nextHookId;
     }
 
+    public int addTempHook(Consumer<Integer> hook) {
+        this.tempHooks.put(++nextHookId, hook);
+        return nextHookId;
+    }
+
     public void removeHook(int hookId) {
         this.hooks.remove(hookId);
+        this.tempHooks.remove(hookId);
     }
 
     public abstract long getAbsoluteMillis();

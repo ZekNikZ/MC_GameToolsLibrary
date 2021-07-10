@@ -57,8 +57,47 @@ public class WorldSyncService extends Service {
         return this;
     }
 
+    public double getWorldBorderSize() {
+        return Bukkit.getWorlds().get(0).getWorldBorder().getSize();
+    }
+
+    public WorldSyncService stopWorldBorder() {
+        this.setWorldBorderSize(this.getWorldBorderSize());
+        return this;
+    }
+
     public WorldSyncService setDifficulty(Difficulty difficulty) {
         Bukkit.getWorlds().forEach(world -> world.setDifficulty(difficulty));
+        return this;
+    }
+
+    public WorldSyncService setTime(int time) {
+        Bukkit.getWorlds().forEach(world -> world.setTime(time));
+        return this;
+    }
+
+    public WorldSyncService setWeatherClear() {
+        Bukkit.getWorlds().forEach(world -> {
+            world.setStorm(false);
+            world.setThundering(false);
+            world.setWeatherDuration(0);
+        });
+        return this;
+    }
+
+    public WorldSyncService setWeatherRain() {
+        Bukkit.getWorlds().forEach(world -> {
+            world.setStorm(true);
+            world.setThundering(false);
+        });
+        return this;
+    }
+
+    public WorldSyncService setWeatherStorm() {
+        Bukkit.getWorlds().forEach(world -> {
+            world.setStorm(true);
+            world.setThundering(true);
+        });
         return this;
     }
 }

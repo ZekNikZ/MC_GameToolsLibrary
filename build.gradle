@@ -5,10 +5,27 @@ plugins {
 }
 
 group = 'dev.mattrm.mc'
-version = '1.0-SNAPSHOT'
+version = '2.0-SNAPSHOT'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
+
+sourceSets {
+    v1_8 {
+        java.srcDirs += file('src/v1_8/java')
+        java.srcDirs += file('src/main/java')
+        resources.srcDirs += file('src/v1_8/resources')
+        resources.srcDirs += file('src/main/resources')
+        compileClasspath += sourceSets.main.runtimeClasspath
+    }
+    v1_16 {
+        java.srcDirs += file('src/v1_16/java')
+        java.srcDirs += file('src/main/java')
+        resources.srcDirs += file('src/v1_16/resources')
+        resources.srcDirs += file('src/main/resources')
+        compileClasspath += sourceSets.main.runtimeClasspath
+    }
+}
 
 repositories {
     mavenCentral()
@@ -26,11 +43,33 @@ repositories {
     }
 }
 
+configurations {
+    extraLibs
+}
+
 dependencies {
-    compileOnly 'org.spigotmc:spigot-api:1.12-R0.1-SNAPSHOT'
-    compileOnly 'com.comphenix.protocol:ProtocolLib:4.6.0'
-    compileOnly 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+    v1_8Compile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
+    v1_16Compile 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    compile 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+    compile 'fr.minuskube.inv:smart-invs:1.2.7'
+    compile 'org.jetbrains:annotations:16.0.2'
+    compile 'com.comphenix.protocol:ProtocolLib:4.6.0'
+    extraLibs 'org.atteo.classindex:classindex:3.4'
+
+    annotationProcessor 'org.atteo.classindex:classindex:3.4'
     annotationProcessor 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
+
+    configurations.compile.extendsFrom(configurations.extraLibs)
+    configurations.v1_8Compile.extendsFrom(configurations.compile)
+    configurations.v1_16Compile.extendsFrom(configurations.compile)
+    configurations.v1_8AnnotationProcessor.extendsFrom(configurations.annotationProcessor)
+    configurations.v1_16AnnotationProcessor.extendsFrom(configurations.annotationProcessor)
+}
+
+jar {
+    from {
+        configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) }
+    }
 }
 
 processResources {
@@ -42,4 +81,9 @@ processResources {
 task deploy(type: Copy) {
     from file("${buildDir}/libs/${project.name}-${version}.jar")
     into file("${System.env.PLUGIN_DIR}")
+}
+
+sourceSets.all { SourceSet sourceSet ->
+    Task jarTask = tasks.create("jar" + sourceSet.name, Jar.class)
+    jarTask.from(sourceSet.output, configurations.extraLibs.collect { it.isDirectory() ? it : zipTree(it) })
 }

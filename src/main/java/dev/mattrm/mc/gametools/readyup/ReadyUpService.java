@@ -1,24 +1,53 @@
 package dev.mattrm.mc.gametools.readyup;
 
 import dev.mattrm.mc.gametools.Service;
+import dev.mattrm.mc.gametools.teams.GameTeam;
+import dev.mattrm.mc.gametools.teams.TeamService;
+import dev.mattrm.mc.gametools.util.ActionBarUtils;
+import dev.mattrm.mc.gametools.util.Sounds;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-class ReadyUpSession {
-    public Map<UUID, Boolean> readyPlayers = new ConcurrentHashMap<>();
-    public Runnable runnable;
-
-    public ReadyUpSession(Runnable runnable) {
-        this.runnable = runnable;
-    }
-}
+import java.util.function.BiConsumer;
 
 public class ReadyUpService extends Service {
+    public static class ReadyUpSession {
+        private final Map<UUID, Boolean> readyPlayers = new ConcurrentHashMap<>();
+        private final Runnable onAllReady;
+        private final BiConsumer<UUID, ReadyUpSession> onPlayerReady;
+        private final int taskId;
+
+        public ReadyUpSession(Runnable onAllReady, BiConsumer<UUID, ReadyUpSession> onPlayerReady) {
+            this.onAllReady = onAllReady;
+            this.onPlayerReady = onPlayerReady;
+            this.taskId = Bukkit.getScheduler().scheduleSyncRepeatingTask(getInstance().getPlugin(), () -> {
+                readyPlayers.entrySet().stream().filter(entry -> !entry.getValue()).forEach(entry -> {
+                    Player player = Bukkit.getPlayer(entry.getKey());
+                    if (player != null) {
+                        ActionBarUtils.getInstance().sendActionBarMessage(player, ChatColor.GOLD + "Are you ready? Type /ready to confirm.");
+                    }
+                });
+            }, 10, 10);
+        }
+
+        public long getReadyPlayerCount() {
+            return readyPlayers.values().stream().filter(Boolean::booleanValue).count();
+        }
+
+        public long getTotalPlayerCount() {
+            return readyPlayers.size();
+        }
+
+        public void cancel() {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+    }
+
     private static final ReadyUpService INSTANCE = new ReadyUpService();
 
     public static ReadyUpService getInstance() {
@@ -26,11 +55,16 @@ public class ReadyUpService extends Service {
     }
 
     private int nextId = 0;
+    private String prefix = "";
     private final Map<Integer, ReadyUpSession> sessions = new ConcurrentHashMap<>();
 
-    public int waitForReady(Collection<UUID> players, Runnable handler) {
+    public int waitForReady(Collection<UUID> players, Runnable onAllReady) {
+        return this.waitForReady(players, onAllReady, null);
+    }
+
+    public int waitForReady(Collection<UUID> players, Runnable onAllReady, BiConsumer<UUID, ReadyUpSession> onPlayerReady) {
+        ReadyUpSession session = new ReadyUpSession(Objects.requireNonNull(onAllReady), onPlayerReady);
         int id = this.nextId++;
-        ReadyUpSession session = new ReadyUpSession(handler);
         players.forEach(p -> session.readyPlayers.put(p, false));
         this.sessions.put(id, session);
         players.forEach(uuid -> {
@@ -44,8 +78,11 @@ public class ReadyUpService extends Service {
 
     public void cancelReadyWait(int id, boolean runHandler) {
         ReadyUpSession session = this.sessions.remove(id);
-        if (session != null && runHandler) {
-            session.runnable.run();
+        if (session != null) {
+            session.cancel();
+            if (runHandler) {
+                session.onAllReady.run();
+            }
         }
     }
 
@@ -62,6 +99,19 @@ public class ReadyUpService extends Service {
 
             session.readyPlayers.put(player, true);
             success = true;
+            session.readyPlayers.keySet().stream().map(Bukkit::getPlayer).filter(Objects::nonNull).forEach(p -> {
+                GameTeam playerTeam = TeamService.getInstance().getPlayerTeam(player);
+                Player thePlayer = Bukkit.getPlayer(player);
+                if (playerTeam != null) {
+                    p.sendMessage(prefix + ChatColor.RESET + ChatColor.GRAY + playerTeam.getFormatCode() + ChatColor.BOLD + playerTeam.getPrefix() + " " + playerTeam.getFormatCode() + thePlayer.getDisplayName() + ChatColor.RESET + " is ready!");
+                } else {
+                    p.sendMessage(prefix + ChatColor.RESET + thePlayer.getDisplayName() + " is ready!");
+                }
+            });
+
+            if (session.onPlayerReady != null) {
+                session.onPlayerReady.accept(player, session);
+            }
 
             if (session.readyPlayers.values().stream().allMatch(Boolean::booleanValue)) {
                 doneSessions.add(key);
@@ -80,7 +130,11 @@ public class ReadyUpService extends Service {
     }
 
     private void displayReadyMessage(Player player) {
-        // todo: improve
-        player.sendMessage("Are you ready? Type /ready to confirm.");
+        player.sendMessage(prefix + "Are you ready? Type /ready to confirm.");
+        player.playSound(player.getLocation(), Sounds.getInstance().notePling(), 1, 1);
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 }

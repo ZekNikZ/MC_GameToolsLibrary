@@ -2,7 +2,10 @@ package dev.mattrm.mc.gametools.scoreboards.impl;
 
 import dev.mattrm.mc.gametools.scoreboards.GameScoreboard;
 import dev.mattrm.mc.gametools.scoreboards.ValueEntry;
+import dev.mattrm.mc.gametools.teams.GameTeam;
+import dev.mattrm.mc.gametools.teams.TeamService;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
@@ -36,11 +39,13 @@ public class PlayerEntry extends ValueEntry<UUID> {
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(this.getValue());
         if (offlinePlayer != null) {
-            name = offlinePlayer.getName();
+            GameTeam playerTeam = TeamService.getInstance().getPlayerTeam(offlinePlayer.getUniqueId());
+            name = playerTeam != null ? playerTeam.getFormatCode() + offlinePlayer.getName() : offlinePlayer.getName();
         } else {
             Player player = Bukkit.getPlayer(this.getValue());
             if (player != null) {
-                name = this.showTeam ? player.getDisplayName() : player.getName();
+                GameTeam playerTeam = TeamService.getInstance().getPlayerTeam(player);
+                name = this.showTeam && playerTeam != null ? playerTeam.getFormatCode() + player.getDisplayName() : player.getDisplayName();
             } else {
                 name = "???";
             }
