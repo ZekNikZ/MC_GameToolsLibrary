@@ -1,29 +1,21 @@
 package dev.mattrm.mc.gametools.util;
 
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
 import dev.mattrm.mc.gametools.VersionDependent;
-import dev.mattrm.mc.gametools.VersionedInstance;
+import dev.mattrm.mc.gametools.util.version.IVersioned;
+import dev.mattrm.mc.gametools.util.version.VersionDependentClasses;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
 @VersionDependent
-public interface ActionBarUtils {
-    @VersionedInstance
-    ActionBarUtils INSTANCE = null;
-
-    static ActionBarUtils getInstance() {
-        return INSTANCE;
+public interface ActionBarUtils extends IVersioned {
+    static ActionBarUtils get() {
+        return (ActionBarUtils) VersionDependentClasses.get(ActionBarUtils.class);
     }
 
     /**

@@ -1,18 +1,16 @@
 package dev.mattrm.mc.gametools.util;
 
 import dev.mattrm.mc.gametools.VersionDependent;
-import dev.mattrm.mc.gametools.VersionedInstance;
+import dev.mattrm.mc.gametools.util.version.IVersioned;
+import dev.mattrm.mc.gametools.util.version.VersionDependentClasses;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 @VersionDependent
-public interface TitleUtils {
-    @VersionedInstance
-    TitleUtils INSTANCE = null;
-
-    static TitleUtils getInstance() {
-        return INSTANCE;
+public interface TitleUtils extends IVersioned {
+    static TitleUtils get() {
+        return (TitleUtils) VersionDependentClasses.get(TitleUtils.class);
     }
 
     void sendActionBarMessage(@NotNull Player bukkitPlayer, @NotNull String message);

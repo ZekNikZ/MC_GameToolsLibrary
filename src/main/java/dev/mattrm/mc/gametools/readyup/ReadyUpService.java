@@ -29,7 +29,7 @@ public class ReadyUpService extends Service {
                 readyPlayers.entrySet().stream().filter(entry -> !entry.getValue()).forEach(entry -> {
                     Player player = Bukkit.getPlayer(entry.getKey());
                     if (player != null) {
-                        ActionBarUtils.getInstance().sendActionBarMessage(player, ChatColor.GOLD + "Are you ready? Type /ready to confirm.");
+                        ActionBarUtils.get().sendActionBarMessage(player, ChatColor.GOLD + "Are you ready? Type /ready to confirm.");
                     }
                 });
             }, 10, 10);
@@ -131,7 +131,7 @@ public class ReadyUpService extends Service {
 
     private void displayReadyMessage(Player player) {
         player.sendMessage(prefix + "Are you ready? Type /ready to confirm.");
-        player.playSound(player.getLocation(), Sounds.getInstance().notePling(), 1, 1);
+        player.playSound(player.getLocation(), Sounds.get().notePling(), 1, 1);
     }
 
     public void setPrefix(String prefix) {

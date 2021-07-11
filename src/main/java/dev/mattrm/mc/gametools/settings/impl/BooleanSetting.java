@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class BooleanSetting extends GameSetting<Boolean> {
-    private static final ItemStack DISABLED = ISB.material(DataMaterials.getInstance().grayDye()).name("Off").build();
-    private static final ItemStack ENABLED = ISB.material(DataMaterials.getInstance().limeDye()).name("On").build();
+    private static final ItemStack DISABLED = ISB.material(DataMaterials.get().grayDye()).name("Off").build();
+    private static final ItemStack ENABLED = ISB.material(DataMaterials.get().limeDye()).name("On").build();
 
     private boolean value;
 

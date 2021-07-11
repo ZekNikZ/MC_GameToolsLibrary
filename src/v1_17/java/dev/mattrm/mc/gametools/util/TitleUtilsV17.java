@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @VersionImplementation
-public class TitleUtilsV16 implements TitleUtils {
+public class TitleUtilsV17 implements TitleUtils {
     private final Map<Player, BukkitTask> PENDING_MESSAGES = new HashMap<>();
 
     /**

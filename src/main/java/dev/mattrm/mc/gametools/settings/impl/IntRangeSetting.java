@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class IntRangeSetting extends GameSetting<Integer> {
-    private static final DataMaterial SELECTOR_ITEM = DataMaterials.getInstance().cyanDye();
+    private static final DataMaterial SELECTOR_ITEM = DataMaterials.get().cyanDye();
 
     private final int min, max, step;
     private int value;

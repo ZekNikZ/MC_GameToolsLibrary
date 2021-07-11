@@ -4,7 +4,7 @@ import dev.mattrm.mc.gametools.VersionImplementation;
 import org.bukkit.Material;
 
 @VersionImplementation
-public class DataMaterialsV16 implements DataMaterials {
+public class DataMaterialsV17 implements DataMaterials {
     @Override
     public DataMaterial limeDye() {
         return new DataMaterial(Material.LIME_DYE);

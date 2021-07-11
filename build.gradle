@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'dev.mattrm.mc'
-version = '2.0-SNAPSHOT'
+version = '3.0-SNAPSHOT'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -18,10 +18,10 @@ sourceSets {
         resources.srcDirs += file('src/main/resources')
         compileClasspath += sourceSets.main.runtimeClasspath
     }
-    v1_16 {
-        java.srcDirs += file('src/v1_16/java')
+    v1_17 {
+        java.srcDirs += file('src/v1_17/java')
         java.srcDirs += file('src/main/java')
-        resources.srcDirs += file('src/v1_16/resources')
+        resources.srcDirs += file('src/v1_17/resources')
         resources.srcDirs += file('src/main/resources')
         compileClasspath += sourceSets.main.runtimeClasspath
     }
@@ -49,7 +49,7 @@ configurations {
 
 dependencies {
     v1_8Compile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
-    v1_16Compile 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+    v1_17Compile 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
     compile 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
     compile 'fr.minuskube.inv:smart-invs:1.2.7'
     compile 'org.jetbrains:annotations:16.0.2'
@@ -61,9 +61,9 @@ dependencies {
 
     configurations.compile.extendsFrom(configurations.extraLibs)
     configurations.v1_8Compile.extendsFrom(configurations.compile)
-    configurations.v1_16Compile.extendsFrom(configurations.compile)
+    configurations.v1_17Compile.extendsFrom(configurations.compile)
     configurations.v1_8AnnotationProcessor.extendsFrom(configurations.annotationProcessor)
-    configurations.v1_16AnnotationProcessor.extendsFrom(configurations.annotationProcessor)
+    configurations.v1_17AnnotationProcessor.extendsFrom(configurations.annotationProcessor)
 }
 
 jar {

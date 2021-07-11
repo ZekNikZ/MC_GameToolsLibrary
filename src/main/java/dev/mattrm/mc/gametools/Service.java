@@ -11,7 +11,11 @@ public abstract class Service implements Listener {
     public final void setup(JavaPlugin plugin) {
         this.plugin = plugin;
         this.setupService();
-        this.registerPacketListeners(ProtocolLibrary.getProtocolManager());
+        try {
+            this.registerPacketListeners(ProtocolLibrary.getProtocolManager());
+        } catch (NoClassDefFoundError e) {
+            plugin.getLogger().warning("ProtocolLib was not found. Could not load packet listeners.");
+        }
     }
 
     public JavaPlugin getPlugin() {
