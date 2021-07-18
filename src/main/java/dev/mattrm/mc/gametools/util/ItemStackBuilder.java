@@ -153,7 +153,7 @@ public class ItemStackBuilder {
         }
 
         if (this.unbreakable != null) {
-            meta.setUnbreakable(this.unbreakable);
+//            meta.setUnbreakable(this.unbreakable);
         }
 
         stack.setItemMeta(meta);

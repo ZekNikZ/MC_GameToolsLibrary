@@ -61,16 +61,16 @@ public class CustomEventHandler implements Listener {
         }, 1);
     }
 
-    @EventHandler
-    public void onEntityPickupItem(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player)) {
-            return;
-        }
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-            Bukkit.getServer().getPluginManager().callEvent(new PlayerInventoryChangeEvent(((Player) event.getEntity()), ((Player) event.getEntity()).getInventory(), event));
-        }, 1);
-    }
+//    @EventHandler
+//    public void onEntityPickupItem(EntityPickupItemEvent event) {
+//        if (!(event.getEntity() instanceof Player)) {
+//            return;
+//        }
+//
+//        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+//            Bukkit.getServer().getPluginManager().callEvent(new PlayerInventoryChangeEvent(((Player) event.getEntity()), ((Player) event.getEntity()).getInventory(), event));
+//        }, 1);
+//    }
 
     @EventHandler
     public void onCraft(CraftItemEvent event) {
@@ -81,7 +81,7 @@ public class CustomEventHandler implements Listener {
 
     @EventHandler
     public void onUseBucket(PlayerInteractAtEntityEvent event) {
-        if (event.getPlayer().getInventory().getItemInMainHand().getType() != Material.BUCKET && event.getPlayer().getInventory().getItemInMainHand().getType() != Material.WATER_BUCKET) {
+        if (event.getPlayer().getInventory().getItemInHand().getType() != Material.BUCKET && event.getPlayer().getInventory().getItemInHand().getType() != Material.WATER_BUCKET) {
             return;
         }
 

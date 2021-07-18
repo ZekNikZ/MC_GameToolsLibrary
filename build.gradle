@@ -48,6 +48,7 @@ configurations {
 }
 
 dependencies {
+    compile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     v1_8Compile 'org.spigotmc:spigot-api:1.8.8-R0.1-SNAPSHOT'
     v1_17Compile 'org.spigotmc:spigot-api:1.17.1-R0.1-SNAPSHOT'
     compile 'org.spigotmc:plugin-annotations:1.2.3-SNAPSHOT'
