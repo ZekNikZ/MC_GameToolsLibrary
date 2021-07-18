@@ -7,6 +7,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.scoreboard.Team;
 
 import java.awt.*;
+import java.util.Objects;
 
 public class GameTeam implements IYamlSectionSerializable<GameTeam> {
     public static final GameTeam SPECTATOR = new GameTeam("spectators", "Spectators", "SPEC");
@@ -101,5 +102,18 @@ public class GameTeam implements IYamlSectionSerializable<GameTeam> {
 
     public Color getColor() {
         return this.color;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof GameTeam)) return false;
+        GameTeam gameTeam = (GameTeam) o;
+        return Objects.equals(getId(), gameTeam.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }
