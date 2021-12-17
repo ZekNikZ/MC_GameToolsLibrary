@@ -7,8 +7,8 @@ public class Version {
         return Bukkit.getBukkitVersion().contains("1.8");
     }
 
-    public static boolean is16() {
-        return Bukkit.getBukkitVersion().contains("1.16");
+    public static boolean is17() {
+        return Bukkit.getBukkitVersion().contains("1.17");
     }
 
     public static int getJavaVersion() {

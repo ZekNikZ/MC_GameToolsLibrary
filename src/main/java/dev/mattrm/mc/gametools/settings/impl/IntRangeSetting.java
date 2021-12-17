@@ -67,11 +67,13 @@ public class IntRangeSetting extends GameSetting<Integer> {
         ItemStackBuilder builder = ISB.material(SELECTOR_ITEM)
             .name("" + this.value);
 
+        int val;
         if (this.min >= 0 && this.max <= 64) {
-            builder.amount(this.value);
+            val = this.value;
         } else {
-            builder.amount((this.value - this.min) / this.step + 1);
+            val = (this.value - this.min) / this.step + 1;
         }
+        builder.amount(val == 0 ? 1 : val);
 
         return builder.build();
     }
